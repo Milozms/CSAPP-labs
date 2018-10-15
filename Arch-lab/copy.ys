@@ -1,0 +1,71 @@
+#ID = 1500012898	
+.pos 0x1000
+Stack:
+# Execution begins at address 0 
+	.pos 0 
+
+init:
+	irmovl Stack, %esp  	# Set up stack pointer  
+	irmovl Stack, %ebp  	# Set up base pointer   
+	call Main		# Execute main program
+	halt			# Terminate program 
+
+.align 4
+#Source block
+src:
+	.long 0x00a
+	.long 0x0b0
+	.long 0xc00
+
+#Destinaton block
+dest:
+	.long 0x111
+	.long 0x222
+	.long 0x333
+
+Main:	pushl %ebp 
+	rrmovl %esp,%ebp
+	irmovl $4,%eax	
+	pushl %eax		# Push 4
+	irmovl $3,%eax	
+	pushl %eax		
+	irmovl dest,%edx
+	pushl %edx      	# Push dest
+	irmovl src,%edx
+	pushl %edx      	# Push src
+	call copy_block		
+	rrmovl %ebp,%esp
+	popl %ebp
+	ret 
+
+copy_block:
+	pushl	%ebp
+	rrmovl	%esp, %ebp
+	pushl	%esi
+	pushl	%ebx
+	mrmovl	8(%ebp), %ebx
+	mrmovl	12(%ebp), %ecx
+	mrmovl	16(%ebp), %edx
+	irmovl	$0, %esi
+	pushl   %edi
+	irmovl  $4, %edi
+	andl	%edx, %edx
+	jle	Done
+Loop:
+	mrmovl	(%ebx), %eax
+	addl	%edi, %ebx
+	rmmovl	%eax, (%ecx)
+	addl	%edi, %ecx
+	xorl	%eax, %esi
+	irmovl  $1, %edi
+	subl	%edi, %edx
+	irmovl  $4,%edi
+	andl	%edx, %edx
+	jg	Loop
+Done:
+	rrmovl	%esi, %eax
+	popl    %edi
+	popl	%ebx
+	popl	%esi
+	popl    %ebp
+	ret

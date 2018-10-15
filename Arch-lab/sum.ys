@@ -1,0 +1,53 @@
+#ID = 1500012898	
+	.pos 0x100
+Stack:
+# Execution begins at address 0 
+	.pos 0 
+
+init:
+	irmovl Stack, %esp  	# Set up stack pointer  
+	irmovl Stack, %ebp  	# Set up base pointer   
+	call Main		# Execute main program
+	halt			# Terminate program 
+
+# Sample linked list
+	.align 4
+ele1:
+	.long 0x00a
+	.long ele2
+ele2:
+	.long 0x0b0
+	.long ele3
+ele3:
+	.long 0xc00
+	.long 0
+
+Main:	pushl %ebp 
+	rrmovl %esp,%ebp
+	irmovl $4,%eax	
+	pushl %eax		# Push 4
+	irmovl ele1,%edx
+	pushl %edx      	# Push array
+	call sum_list		
+	rrmovl %ebp,%esp
+	popl %ebp
+	ret 
+
+sum_list:
+	pushl	%ebp
+	rrmovl	%esp, %ebp
+	mrmovl	8(%ebp), %edx
+	pushl   %ecx
+	irmovl	$0, %eax
+	andl	%edx, %edx
+	je	Done
+Loop:
+	mrmovl  (%edx), %ecx
+	addl	%ecx, %eax
+	mrmovl	4(%edx), %edx
+	andl	%edx, %edx
+	jne	Loop
+Done:
+	popl    %ecx
+	popl    %ebp
+	ret
